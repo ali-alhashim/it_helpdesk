@@ -1,8 +1,8 @@
 {
-    'name': 'IT Helpdesk Management',
+    'name': 'IT Ticket Management',
     'version': '1.0',
     'category': 'Operations/IT',
-    'summary': 'Manage Helpdesk tracking and assignments Tickets',
+    'summary': 'Manage Ticket tracking and assignments for IT support',
     'author': 'Ali Alhashim',
     'depends': ['base', 'hr', 'mail', 'web'],
     'data': [
