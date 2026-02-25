@@ -1,0 +1,20 @@
+{
+    'name': 'IT Helpdesk Management',
+    'version': '1.0',
+    'category': 'Operations/IT',
+    'summary': 'Manage Helpdesk tracking and assignments Tickets',
+    'author': 'Ali Alhashim',
+    'depends': ['base', 'hr', 'mail', 'web'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        
+        'views/tickets_views.xml',
+       
+        
+    ],
+   
+    'installable': True,
+    'application': True,
+    'license': 'LGPL-3',
+}
