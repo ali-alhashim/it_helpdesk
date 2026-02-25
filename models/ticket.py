@@ -44,3 +44,19 @@ class ITTicket(models.Model):
     def action_close_ticket(self):
         for record in self:
             record.state = 'closed'
+
+
+    def action_assign(self):
+        self.write({'state': 'assigned', 'assigned_to': self.env.user.id})
+
+    def action_progress(self):
+        self.write({'state': 'in_progress'})
+
+    def action_resolve(self):
+        self.write({'state': 'resolved'})
+
+    def action_close(self):
+        self.write({'state': 'closed'})
+
+    def action_cancel(self):
+        self.write({'state': 'cancelled'})

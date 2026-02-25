@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_it_helpdesk_ticket_tree" model="ir.ui.view">
+        <field name="name">it.helpdesk.ticket.tree</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'draft'" 
+                  decoration-warning="state == 'in_progress'" 
+                  decoration-success="state in ('resolved', 'closed')" 
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="ticket_type"/>
+                <field name="created_by"/>
+                <field name="assigned_to"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'assigned'" 
+                       decoration-success="state == 'closed'" 
+                       decoration-warning="state == 'in_progress'"/>
+                <field name="satisfaction_rate" widget="priority" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_ticket_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.ticket.form</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_assign" string="Assign to Me" type="object" 
+                            class="oe_highlight" attrs="{'invisible': [('state', '!=', 'draft')]}"
+                            groups="base.group_user"/>
+                    
+                    <button name="action_progress" string="Start Work" type="object" 
+                            class="oe_highlight" attrs="{'invisible': [('state', '!=', 'assigned')]}"/>
+                    
+                    <button name="action_resolve" string="Mark Resolved" type="object" 
+                            attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
+                    
+                    <button name="action_close" string="Close &amp; Rate" type="object" 
+                            class="oe_highlight" attrs="{'invisible': [('state', '!=', 'resolved')]}"/>
+
+                    <button name="action_cancel" string="Cancel" type="object" 
+                            attrs="{'invisible': [('state', 'in', ('closed', 'cancelled'))]}"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,assigned,in_progress,resolved,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="Ticket Subject"/>
+                        <h1><field name="name" placeholder="e.g. Cannot access email..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Ticket Details">
+                            <field name="ticket_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="created_by" readonly="1" options="{'no_open': True}"/>
+                        </group>
+                        <group string="Assignment &amp; Feedback">
+                            <field name="assigned_to" readonly="1"/>
+                            <field name="satisfaction_rate" widget="priority" 
+                                   attrs="{'invisible': [('state', 'not in', ('resolved', 'closed'))]}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Provide details about your request..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_ticket_search" model="ir.ui.view">
+        <field name="name">it.helpdesk.ticket.search</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="assigned_to"/>
+                <field name="created_by"/>
+                <separator/>
+                <filter string="My Tickets" name="my_tickets" domain="[('created_by', '=', uid)]"/>
+                <filter string="Open Tickets" name="open_tickets" domain="[('state', 'not in', ('closed', 'cancelled'))]"/>
+                <filter string="Closed Tickets" name="closed_tickets" domain="[('state', '=', 'closed')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="IT Support Member" name="group_assigned" context="{'group_by': 'assigned_to'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Request Type" name="group_type" context="{'group_by': 'ticket_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_it_helpdesk_ticket" model="ir.actions.act_window">
+        <field name="name">IT Support Tickets</field>
+        <field name="res_model">it.helpdesk.ticket</field>
+        <field name="view_mode">tree,form,kanban,graph,pivot</field>
+        <field name="search_view_id" ref="view_it_helpdesk_ticket_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first IT request!</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_it_helpdesk_root" name="IT Helpdesk" sequence="10" web_icon="it_helpdesk,static/description/icon.png"/>
+    <menuitem id="menu_it_helpdesk_ticket" name="Tickets" parent="menu_it_helpdesk_root" action="action_it_helpdesk_ticket" sequence="10"/>
+</odoo>
