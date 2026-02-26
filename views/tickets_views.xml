@@ -29,7 +29,7 @@
                 <button name="action_assign" string="Assign to Me" type="object"
                         class="oe_highlight"
                         invisible="state != 'draft'"
-                        groups="base.group_user"/>
+                        groups="group_it_ticket_support"/>
 
                 <button name="action_progress" string="Start Work" type="object"
                         class="oe_highlight"

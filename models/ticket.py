@@ -38,8 +38,14 @@ class ITTicket(models.Model):
 # if the current user has the 'it_support' group, they can see the assigned tickets and change their state
     def action_assign_to_me(self):
         for record in self:
-            record.assigned_to = self.env.user
-            record.state = 'assigned'
+            # Security check: only IT support can assign
+            if not self.env.user.has_group('it_helpdesk.group_it_support'):
+                raise UserError(_("Only IT Support staff can assign tickets."))
+            else:
+                 record.assigned_to = self.env.user
+                 record.state = 'assigned'
+
+           
 
     def action_close_ticket(self):
         for record in self:

@@ -8,7 +8,7 @@
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        
+        'security/record_rules.xml',
         'views/tickets_views.xml',
        
         
