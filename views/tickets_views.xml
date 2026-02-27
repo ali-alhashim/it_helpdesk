@@ -15,7 +15,9 @@
                        decoration-info="state == 'assigned'" 
                        decoration-success="state == 'closed'" 
                        decoration-warning="state == 'in_progress'"/>
-                <field name="satisfaction_rate" widget="priority" optional="show"/>
+
+                <field name="satisfaction_rate" widget="priority" optional="show" readonly="1"/>
+
             </list>
         </field>
     </record>
@@ -29,11 +31,13 @@
                 <button name="action_assign" string="Assign to Me" type="object"
                         class="oe_highlight"
                         invisible="state != 'draft'"
-                        groups="group_it_ticket_support"/>
+                        groups="it_ticket.group_it_ticket_support"/>
 
                 <button name="action_progress" string="Start Work" type="object"
                         class="oe_highlight"
-                        invisible="state != 'assigned'"/>
+                        invisible="state != 'assigned'"
+                        groups="it_ticket.group_it_ticket_support"
+                        />
 
                 <button name="action_resolve" string="Mark Resolved" type="object"
                         invisible="state != 'in_progress'"/>
@@ -63,8 +67,12 @@
                     </group>
                     <group string="Assignment &amp; Feedback">
                         <field name="assigned_to" readonly="1"/>
+
                         <field name="satisfaction_rate" widget="priority"
-                               invisible="state not in ('resolved', 'closed')"/>
+                               invisible="state not in ('resolved', 'closed')"
+                               readonly="is_rated or not is_creator"
+                        />
+
                     </group>
                 </group>
                 <notebook>

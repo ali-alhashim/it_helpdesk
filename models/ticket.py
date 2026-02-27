@@ -24,7 +24,7 @@ class ITTicket(models.Model):
     ], string="Status", default='draft', tracking=True)
 
 
-    created_by = fields.Many2one('res.users', default=lambda self: self.env.user)
+    created_by = fields.Many2one('res.users', default=lambda self: self.env.user, string="Created By", readonly=True)
     assigned_to = fields.Many2one('res.users', string="IT Support")
 
 # Satisfaction Rating (Only visible when Closed)
@@ -35,15 +35,30 @@ class ITTicket(models.Model):
         ('4', 'Very Satisfied')
     ], string="Satisfaction", tracking=True)
 
-# if the current user has the 'it_support' group, they can see the assigned tickets and change their state
-    def action_assign_to_me(self):
-        for record in self:
-            # Security check: only IT support can assign
-            if not self.env.user.has_group('it_helpdesk.group_it_support'):
-                raise UserError(_("Only IT Support staff can assign tickets."))
-            else:
-                 record.assigned_to = self.env.user
-                 record.state = 'assigned'
+    is_rated = fields.Boolean(string="Already Rated", default=False, copy=False)
+
+    is_creator = fields.Boolean(compute='_compute_is_creator')
+
+
+    @api.depends('created_by')
+    def _compute_is_creator(self):
+        for rec in self:
+            rec.is_creator = (rec.created_by.id == self.env.user.id)
+
+
+    def write(self, vals):
+        if 'satisfaction_rate' in vals:
+            for rec in self:
+                if rec.created_by.id != self.env.user.id:
+                    raise UserError(_("Only the ticket creator can rate satisfaction."))
+                if rec.is_rated:
+                    raise UserError(_("You have already rated this ticket and cannot change it."))
+                if rec.state not in ('resolved', 'closed'):
+                    raise UserError(_("You can only rate resolved or closed tickets."))
+            vals['is_rated'] = True
+        return super().write(vals)
+
+    
 
            
 
@@ -53,7 +68,15 @@ class ITTicket(models.Model):
 
 
     def action_assign(self):
-        self.write({'state': 'assigned', 'assigned_to': self.env.user.id})
+        # if the current user has the 'group_it_ticket_support' group, they can see the assigned tickets and change their state
+        for record in self:
+            if not self.env.user.has_group('it_ticket.group_it_ticket_support'):
+                raise UserError(_("Only IT Support staff can assign tickets."))
+            record.write({
+                'state': 'assigned',
+                'assigned_to': self.env.user.id
+            })
+        
 
     def action_progress(self):
         self.write({'state': 'in_progress'})
