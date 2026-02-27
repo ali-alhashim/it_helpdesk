@@ -9,6 +9,8 @@
         'security/security.xml',
         'security/ir.model.access.csv',
         'security/record_rules.xml',
+        'views/performance_report_wizard_view.xml',
+        'wizards/performance_report_templates.xml',
         'views/tickets_views.xml',
        
         

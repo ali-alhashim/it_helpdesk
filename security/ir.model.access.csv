@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_it_ticket_user, it.ticket.user,model_it_ticket,group_it_ticket_user,1,1,1,0
 access_it_ticket_support, it.ticket.support,model_it_ticket,group_it_ticket_support,1,1,1,0
+access_it_performance_wizard,it.performance.wizard,model_it_performance_report_wizard,base.group_user,1,1,1,1

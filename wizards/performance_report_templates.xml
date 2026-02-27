@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="it_performance_report_action" model="ir.actions.report">
+        <field name="name">IT Support Performance</field>
+        <field name="model">it.performance.report.wizard</field>
+        <field name="report_type">qweb-html</field> <field name="report_name">it_ticket.report_performance_template</field>
+        <field name="report_file">it_ticket.report_performance_template</field>
+        <field name="binding_model_id" ref="model_it_performance_report_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_performance_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <center>
+                        <h2>IT Support Performance Summary</h2>
+                        <h4>Period: <span t-field="doc.date_from"/> to <span t-field="doc.date_to"/></h4>
+                    </center>
+
+                    <table class="table table-sm table-reports mt-4">
+                        <thead>
+                            <tr class="table-active">
+                                <th>Support Engineer</th>
+                                <th class="text-center">Closed</th>
+                                <th class="text-center">Cancelled</th>
+                                <th class="text-center">Open</th>
+                                <th class="text-center">Full Satisfaction (4★)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="performance_data" t-as="line">
+                                <tr>
+                                    <td><span t-esc="line['name']"/></td>
+                                    <td class="text-center"><span t-esc="line['closed']"/></td>
+                                    <td class="text-center"><span t-esc="line['cancelled']"/></td>
+                                    <td class="text-center"><span t-esc="line['open']"/></td>
+                                    <td class="text-center">
+                                        <span class="badge badge-success" t-esc="line['satisfied']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    
+                    <div class="mt-4 p-3 bg-light">
+                        <strong>Performance Note:</strong> 
+                        The best performer is calculated based on the highest ratio of 
+                        <strong>closed Tickets</strong> vs <strong>Full Satisfaction</strong>.
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
