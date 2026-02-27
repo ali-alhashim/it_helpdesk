@@ -54,16 +54,17 @@
                        statusbar_visible="draft,assigned,in_progress,resolved,closed"/>
             </header>
             <sheet>
+            <field name="is_editable" invisible="1"/>
                 <div class="oe_title">
                     <label for="name" string="Ticket Subject"/>
                     <h1>
-                        <field name="name" placeholder="e.g. Cannot access email..."/>
+                        <field name="name" placeholder="e.g. Cannot access email..." readonly="not is_editable"/>
                     </h1>
                 </div>
                 <group>
                     <group string="Ticket Details">
                         <field name="ticket_type" widget="radio"
-                               options="{'horizontal': true}"/>
+                               options="{'horizontal': true}" readonly="not is_editable"/>
                         <field name="created_by" readonly="1"/>
                     </group>
                     <group string="Assignment &amp; Feedback">
@@ -79,7 +80,7 @@
                 <notebook>
                     <page string="Description" name="description">
                         <field name="description"
-                               placeholder="Provide details about your request..."/>
+                               placeholder="Provide details about your request..." readonly="not is_editable"/>
                     </page>
                 </notebook>
             </sheet>

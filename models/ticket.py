@@ -39,6 +39,13 @@ class ITTicket(models.Model):
 
     is_creator = fields.Boolean(compute='_compute_is_creator')
 
+    is_editable = fields.Boolean(compute='_compute_is_editable')
+
+    @api.depends('state')
+    def _compute_is_editable(self):
+        for rec in self:
+            rec.is_editable = rec.state not in ('closed', 'cancelled')
+
 
     @api.depends('created_by')
     def _compute_is_creator(self):
@@ -47,6 +54,15 @@ class ITTicket(models.Model):
 
 
     def write(self, vals):
+        for rec in self:
+            # ✅ Block editing closed/cancelled tickets
+            if rec.state in ('closed', 'cancelled'):
+                allowed_fields = {'satisfaction_rate', 'is_rated', 'message_ids', 'activity_ids'}
+                forbidden = set(vals.keys()) - allowed_fields
+                if forbidden:
+                    raise UserError(_("You cannot edit a ticket that is closed or cancelled."))
+
+        # ✅ Satisfaction rate validation
         if 'satisfaction_rate' in vals:
             for rec in self:
                 if rec.created_by.id != self.env.user.id:
@@ -56,6 +72,7 @@ class ITTicket(models.Model):
                 if rec.state not in ('resolved', 'closed'):
                     raise UserError(_("You can only rate resolved or closed tickets."))
             vals['is_rated'] = True
+
         return super().write(vals)
 
     
