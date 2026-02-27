@@ -1,4 +1,9 @@
 from odoo import models, fields, api
+from datetime import datetime, time
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class ITPerformanceWizard(models.TransientModel):
     _name = 'it.performance.report.wizard'
@@ -8,15 +13,8 @@ class ITPerformanceWizard(models.TransientModel):
     date_to = fields.Date(string="End Date", required=True, default=fields.Date.context_today)
 
     def action_print_report(self):
-        # We search for the data here or pass the dates to the report
-        data = {
-            'date_from': self.date_from,
-            'date_to': self.date_to,
-        }
-        # 'it_performance_report_action' is the XML ID of the report action defined in the module
-        return self.env.ref('it_ticket.it_performance_report_action').report_action(self, data=data)
-    
-
+        # ✅ Just pass self, no data dict needed
+        return self.env.ref('it_ticket.it_performance_report_action').report_action(self)
 
 
 class ReportITPerformance(models.AbstractModel):
@@ -25,32 +23,58 @@ class ReportITPerformance(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        docs = self.env['it.performance.report.wizard'].browse(docids)
-        
-        # 1. Fetch all tickets in date range
-        tickets = self.env['it.ticket'].search([
-            ('create_date', '>=', docs.date_from),
-            ('create_date', '<=', docs.date_to)
-        ])
+        _logger.warning(">>> _get_report_values CALLED — docids: %s", docids)
 
-        # 2. Group data by Support User
+        wizard = self.env['it.performance.report.wizard'].browse(docids)
+
+        if not wizard:
+            _logger.warning(">>> wizard is empty!")
+            return {
+                'doc_ids': docids,
+                'doc_model': 'it.performance.report.wizard',
+                'docs': wizard,
+                'doc': wizard,
+                'performance_data': [],
+            }
+
+        doc = wizard[0]
+        _logger.warning(">>> date_from: %s | date_to: %s", doc.date_from, doc.date_to)
+
+        # ✅ Fetch all tickets without date filter first to confirm data exists
+        # ✅ UTC-safe date range
+        start_dt = fields.Datetime.from_string(str(doc.date_from) + ' 00:00:00')
+        end_dt = fields.Datetime.from_string(str(doc.date_to) + ' 23:59:59')
+
+        tickets = self.env['it.ticket'].search([
+            ('create_date', '>=', start_dt),
+            ('create_date', '<=', end_dt),
+        ])
+        _logger.warning(">>> Total tickets found: %s", len(tickets))
+
+        for t in tickets:
+            _logger.warning(">>> Ticket: %s | create_date: %s | assigned_to: %s | state: %s",
+                t.name, t.create_date, t.assigned_to.name if t.assigned_to else 'NONE', t.state)
+
         performance_data = []
         users = tickets.mapped('assigned_to')
+        _logger.warning(">>> Users found: %s", users.mapped('name'))
 
         for user in users:
             user_tickets = tickets.filtered(lambda t: t.assigned_to == user)
             performance_data.append({
                 'name': user.name,
-                'closed': len(user_tickets.filtered(lambda t: t.stage_id.name == 'closed')), # Adjust stage names
-                'cancelled': len(user_tickets.filtered(lambda t: t.stage_id.name == 'cancelled')),
-                'open': len(user_tickets.filtered(lambda t: t.stage_id.name not in ['closed', 'cancelled'])),
-                'satisfied': len(user_tickets.filtered(lambda t: t.rating == '4')), # Adjust based on your rating field
+                'closed': len(user_tickets.filtered(lambda t: t.state == 'closed')),
+                'cancelled': len(user_tickets.filtered(lambda t: t.state == 'cancelled')),
+                'open': len(user_tickets.filtered(lambda t: t.state not in ['closed', 'cancelled'])),
+                'satisfied': len(user_tickets.filtered(lambda t: t.satisfaction_rate == '4')),
             })
+
+        _logger.warning(">>> performance_data: %s", performance_data)
 
         return {
             'doc_ids': docids,
             'doc_model': 'it.performance.report.wizard',
-            'docs': docs,
-            'doc': docs,
+            'docs': wizard,
+            'doc': doc,
             'performance_data': performance_data,
         }

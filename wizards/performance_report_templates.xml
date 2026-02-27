@@ -3,7 +3,8 @@
     <record id="it_performance_report_action" model="ir.actions.report">
         <field name="name">IT Support Performance</field>
         <field name="model">it.performance.report.wizard</field>
-        <field name="report_type">qweb-html</field> <field name="report_name">it_ticket.report_performance_template</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">it_ticket.report_performance_template</field>
         <field name="report_file">it_ticket.report_performance_template</field>
         <field name="binding_model_id" ref="model_it_performance_report_wizard"/>
         <field name="binding_type">report</field>
@@ -16,7 +17,8 @@
                     <div class="oe_structure"/>
                     <center>
                         <h2>IT Support Performance Summary</h2>
-                        <h4>Period: <span t-field="doc.date_from"/> to <span t-field="doc.date_to"/></h4>
+                        <!-- ✅ Use t-esc instead of t-field to avoid widget context issues -->
+                        <h4>Period: <span t-esc="doc.date_from"/> to <span t-esc="doc.date_to"/></h4>
                     </center>
 
                     <table class="table table-sm table-reports mt-4">
@@ -43,10 +45,10 @@
                             </t>
                         </tbody>
                     </table>
-                    
+
                     <div class="mt-4 p-3 bg-light">
-                        <strong>Performance Note:</strong> 
-                        The best performer is calculated based on the highest ratio of 
+                        <strong>Performance Note:</strong>
+                        The best performer is calculated based on the highest ratio of
                         <strong>closed Tickets</strong> vs <strong>Full Satisfaction</strong>.
                     </div>
                 </div>
